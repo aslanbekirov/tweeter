@@ -7,8 +7,8 @@ gem 'sass-rails', '~> 4.0.3'
 # Use Uglifier as compressor for JavaScript assets
 gem 'uglifier', '>= 1.3.0'
 
-# Use Cassandra Driver as primary storage
-gem 'cassandra-driver', '~> 2.1'
+# Use Crate Driver as primary storage
+gem 'crate_ruby', '~> 0.0.8'
 
 # Kafka for logging tweets
 gem 'ruby-kafka', '~> 0.2.0'

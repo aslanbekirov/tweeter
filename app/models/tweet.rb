@@ -1,15 +1,11 @@
-require 'cassandra'
+require 'crate_ruby'
 require 'time'
 
-# Tweet class that talks to Cassandra
+# Tweet class that talks to Crate
 class Tweet
   include ActiveModel::Serialization
-
-  @@cluster = Cassandra.cluster(CASSANDRA_OPTIONS)
-  @@keyspace = 'tweeter'
-  @@session  = @@cluster.connect(@@keyspace)
-  @@generator = Cassandra::Uuid::Generator.new
-  @@paging_state = nil
+  
+  client = CrateRuby::Client.new(CRATE_OPTIONS[:hosts])
 
   attr_accessor :id, :content, :created_at, :handle
 
@@ -22,20 +18,20 @@ class Tweet
   end
 
   def destroy
-    @@session.execute(
-      'DELETE from tweets WHERE id = ?',
+  client = CrateRuby::Client.new(CRATE_OPTIONS[:hosts])
+  client.execute(
+      'DELETE from tweeter.tweets WHERE id = ?',
       arguments: [@id])
   end
 
   def self.all(paged = false)
-    result = @@session.execute(
-      'SELECT id, content, created_at, handle FROM tweets ' \
+   client = CrateRuby::Client.new(CRATE_OPTIONS[:hosts])
+  result = client.execute(
+      'SELECT id, content, created_at, handle FROM tweeter.tweets ' \
       'WHERE kind = ? ORDER BY created_at DESC',
       arguments: ['tweet'],
-      page_size: 25,
-      paging_state: (paged ? @@paging_state : nil)
+      page_size: 25
     )
-    @@paging_state = result.paging_state
     result.map do |tweet|
       c = Tweet.new
       c.id, c.content, c.handle = tweet['id'], tweet['content'], tweet['handle']
@@ -45,21 +41,22 @@ class Tweet
   end
 
   def self.create(params)
+   client = CrateRuby::Client.new(CRATE_OPTIONS[:hosts])
     c = Tweet.new
     c.id = SecureRandom.urlsafe_base64
     c.content = params[:content]
-    cassandra_time = @@generator.now
-    c.created_at = cassandra_time.to_time.utc.iso8601
+    crate_time = Time.now
+    c.created_at = crate_time.to_time.utc.iso8601
     c.handle = params[:handle].downcase
-    @@session.execute(
-      'INSERT INTO tweets (kind, id, content, created_at, handle) ' \
+    client.execute(
+      'INSERT INTO tweeter.tweets (kind, id, content, created_at, handle) ' \
       'VALUES (?, ?, ?, ?, ?)',
-      arguments: ['tweet', c.id, c.content, cassandra_time, c.handle])
+      arguments: ['tweet', c.id, c.content, crate_time, c.handle])
     c
   end
 
   def self.find(id)
-    tweet = @@session.execute(
+    tweet = client.execute(
       'SELECT id, content, created_at, handle FROM tweets WHERE id = ?',
       arguments: [id]).first
     c = Tweet.new

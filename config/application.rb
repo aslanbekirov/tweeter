@@ -15,5 +15,6 @@ Bundler.require(*Rails.groups)
 
 module RailsOnMesos
   class Application < Rails::Application
+  config.logger = ::Logger.new(STDOUT)
   end
 end

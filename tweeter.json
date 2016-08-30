@@ -1,14 +1,14 @@
 {
   "id": "/tweeter",
-  "cmd": "export KAFKA_BROKERS='broker.kafka.l4lb.thisdcos.directory:9092' && until rake cassandra:setup; do sleep 5; done && rails server",
+  "cmd": "export KAFKA_BROKERS='broker.kafka.l4lb.thisdcos.directory:9092' && until rake crate:setup; do sleep 5; done && rails server",
   "cpus": 0.25,
   "mem": 256,
   "disk": 0,
-  "instances": 3,
+  "instances": 1,
   "container": {
     "type": "DOCKER",
     "docker": {
-      "image": "mesosphere/tweeter",
+      "image": "aslanbekirov/tweeter-crate:0.11",
       "network": "BRIDGE",
       "portMappings": [
         {
@@ -23,18 +23,12 @@
     }
   },
   "env": {
-    "CASSANDRA_HOSTS": "node-0.cassandra.mesos",
+    "CRATE_HOSTS": "10.32.0.7:4200",
     "RAILS_ENV": "production",
     "SECRET_KEY_BASE": "be6ea21bd0e8ddad06accbdfbfcbc6f120815744a8177fb1196442c1670401c86a1d020f1fb62f9b7d6bacc8cf818de277d23d3f3e7dcf704ca88965e5b9ed86"
   },
-  "healthChecks": [
-    {
-      "path": "/",
-      "protocol": "HTTP",
-      "portIndex": 0
-    }
-  ],
   "labels": {
-    "HAPROXY_GROUP": "external"
+    "HAPROXY_GROUP": "external",
+    "HAPROXY_0_VHOST": "13.95.229.253"
   }
 }
