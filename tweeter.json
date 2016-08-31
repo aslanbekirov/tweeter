@@ -1,6 +1,6 @@
 {
   "id": "/tweeter",
-  "cmd": "export KAFKA_BROKERS='broker.kafka.l4lb.thisdcos.directory:9092' && until rake crate:setup; do sleep 5; done && rails server",
+  "cmd": "export KAFKA_BROKERS='broker-0.kafka.mesos:9425' && until rake crate:setup; do sleep 5; done && rails server",
   "cpus": 0.25,
   "mem": 256,
   "disk": 0,
@@ -8,7 +8,7 @@
   "container": {
     "type": "DOCKER",
     "docker": {
-      "image": "aslanbekirov/tweeter-crate:0.12",
+      "image": "aslanbekirov/tweeter-crate:0.16",
       "network": "BRIDGE",
       "portMappings": [
         {

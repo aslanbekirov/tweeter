@@ -21,7 +21,7 @@ class Tweet
   client = CrateRuby::Client.new(CRATE_OPTIONS[:hosts])
   client.execute(
       'DELETE from tweeter.tweets WHERE id = ?',
-      arguments: [@id])
+      [@id])
   end
 
   def self.all(paged = false)
@@ -29,11 +29,14 @@ class Tweet
   result = client.execute(
       'SELECT id, content, created_at, handle FROM tweeter.tweets ' \
       'WHERE kind = ? ORDER BY created_at DESC',
-      arguments: ['tweet']
+      ['tweet']
     )
     result.map do |tweet|
       c = Tweet.new
-      c.id, c.content, c.handle = tweet['id'], tweet['content'], tweet['handle']
+#      c.id, c.content, c.handle = tweet['id'], tweet['content'], tweet['handle']
+      c.id = tweet['id']
+      c.content = tweet['content']
+      c.handle = tweet['handle']   	      
       c.created_at = tweet['created_at'].to_time.utc.iso8601
       c
     end
@@ -50,14 +53,14 @@ class Tweet
     client.execute(
       'INSERT INTO tweeter.tweets (kind, id, content, created_at, handle) ' \
       'VALUES (?, ?, ?, ?, ?)',
-      arguments: ['tweet', c.id, c.content, crate_time, c.handle])
+       ['tweet', c.id, c.content, crate_time, c.handle])
     c
   end
 
   def self.find(id)
     tweet = client.execute(
       'SELECT id, content, created_at, handle FROM tweets WHERE id = ?',
-      arguments: [id]).first
+      [id]).first
     c = Tweet.new
     c.id = tweet['id']
     c.content = tweet['content']
