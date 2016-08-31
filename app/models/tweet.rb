@@ -29,8 +29,7 @@ class Tweet
   result = client.execute(
       'SELECT id, content, created_at, handle FROM tweeter.tweets ' \
       'WHERE kind = ? ORDER BY created_at DESC',
-      arguments: ['tweet'],
-      page_size: 25
+      arguments: ['tweet']
     )
     result.map do |tweet|
       c = Tweet.new

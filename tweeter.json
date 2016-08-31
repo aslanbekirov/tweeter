@@ -8,7 +8,7 @@
   "container": {
     "type": "DOCKER",
     "docker": {
-      "image": "aslanbekirov/tweeter-crate:0.11",
+      "image": "aslanbekirov/tweeter-crate:0.12",
       "network": "BRIDGE",
       "portMappings": [
         {
