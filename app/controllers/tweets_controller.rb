@@ -32,6 +32,6 @@ class TweetsController < ActionController::Base
     kafka = Kafka.new(KAFKA_OPTIONS)
     producer = kafka.producer
     producer.produce(tweet.to_json, topic: KAFKA_TOPIC)
-    producer.deliver_messages
+  #  producer.deliver_messages
   end
 end

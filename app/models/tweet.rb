@@ -4,8 +4,8 @@ require 'time'
 # Tweet class that talks to Crate
 class Tweet
   include ActiveModel::Serialization
-  
-  client = CrateRuby::Client.new(CRATE_OPTIONS[:hosts])
+
+  @client = CrateRuby::Client.new(CRATE_OPTIONS[:hosts])
 
   attr_accessor :id, :content, :created_at, :handle
 
@@ -14,58 +14,50 @@ class Tweet
   end
 
   def attributes
-    {'id' => id, 'content' => content, 'created_at' => created_at, 'handle' => handle}
+    { 'id' => id, 'content' => content, 'created_at' => created_at, 'handle' => handle }
   end
 
   def destroy
-  client = CrateRuby::Client.new(CRATE_OPTIONS[:hosts])
-  client.execute(
+    client.execute(
       'DELETE from tweeter.tweets WHERE id = ?',
-      [@id])
+      [@id]
+    )
   end
 
-  def self.all(paged = false)
-   client = CrateRuby::Client.new(CRATE_OPTIONS[:hosts])
-  result = client.execute(
-      'SELECT id, content, created_at, handle FROM tweeter.tweets ' \
+  def self.all(_paged = false)
+    result = @client.execute(
+      'SELECT id, content, date_format(created_at), handle FROM tweeter.tweets ' \
       'WHERE kind = ? ORDER BY created_at DESC',
       ['tweet']
     )
     result.map do |tweet|
       c = Tweet.new
-#      c.id, c.content, c.handle = tweet['id'], tweet['content'], tweet['handle']
-      c.id = tweet['id']
-      c.content = tweet['content']
-      c.handle = tweet['handle']   	      
-      c.created_at = tweet['created_at'].to_time.utc.iso8601
+      c.id, c.content, c.handle = tweet[0], tweet[1], tweet[3]
+      c.created_at = tweet[2].to_time.utc.iso8601
       c
     end
   end
 
   def self.create(params)
-   client = CrateRuby::Client.new(CRATE_OPTIONS[:hosts])
     c = Tweet.new
     c.id = SecureRandom.urlsafe_base64
     c.content = params[:content]
-    crate_time = Time.now
-    c.created_at = crate_time.to_time.utc.iso8601
+    c.created_at = Time.now.to_time.utc.iso8601
     c.handle = params[:handle].downcase
-    client.execute(
+    @client.execute(
       'INSERT INTO tweeter.tweets (kind, id, content, created_at, handle) ' \
       'VALUES (?, ?, ?, ?, ?)',
-       ['tweet', c.id, c.content, crate_time, c.handle])
+      ['tweet', c.id, c.content, c.created_at, c.handle])
     c
   end
 
   def self.find(id)
-    tweet = client.execute(
-      'SELECT id, content, created_at, handle FROM tweets WHERE id = ?',
+    tweet = @client.execute(
+      'SELECT id, content, date_format(created_at), handle FROM tweets WHERE id = ?',
       [id]).first
     c = Tweet.new
-    c.id = tweet['id']
-    c.content = tweet['content']
-    c.created_at = tweet['created_at'].to_time.utc.iso8601
-    c.handle = tweet['handle']
+    c.id, c.content, c.handle = tweet[0], tweet[1], tweet[3]
+    c.created_at = tweet[2].to_time.utc.iso8601
     c
   end
 end

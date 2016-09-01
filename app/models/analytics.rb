@@ -3,14 +3,17 @@ require 'time'
 
 # Tweet class that talks to Crate
 class Analytics
- def self.all(paged = false)
-  client = CrateRuby::Client.new
+  @client = CrateRuby::Client.new(CRATE_OPTIONS[:hosts])
 
-  results = client.execute("Select key, frequency FROM tweeter.analytics where kind='tweet' ORDER BY frequency DESC")
-  results.map do |anal|
+  attr_accessor :key, :frequency
+
+  def self.all(_paged = false)
+
+    results = @client.execute("SELECT key, frequency FROM tweeter.analytics WHERE kind='tweet' ORDER BY frequency DESC")
+    results.map do |a|
       c = Analytics.new
-      c.key, c.frequency = anal['key'], anal['frequency']
+      c.key, c.frequency = a[0], a[1]
       c
     end
-  end
+   end
 end
