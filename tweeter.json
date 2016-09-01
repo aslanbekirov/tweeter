@@ -8,8 +8,9 @@
   "container": {
     "type": "DOCKER",
     "docker": {
-      "image": "aslanbekirov/tweeter-crate:0.16",
+      "image": "clma/tweeter:latest",
       "network": "BRIDGE",
+      "forcePullImage": true,
       "portMappings": [
         {
           "containerPort": 3000,
